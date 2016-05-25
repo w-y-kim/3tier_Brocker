@@ -38,7 +38,7 @@ public class Command implements Serializable{
 	
 	public Command(){}
 	public Command(int cmdValue){//setcmdValue 안쓰고 바로 생성자 통해 변경 하기 위함 
-		
+		this.cmdValue = cmdValue;
 		
 	}
 	public int getCmdValue() {

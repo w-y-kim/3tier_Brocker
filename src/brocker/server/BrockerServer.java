@@ -15,6 +15,7 @@ public class BrockerServer {
 			while(true){
 				Socket client = server.accept();
 				System.out.println(client.getInetAddress().getHostAddress() + " 클라이언트 접속");
+
 				ObjectInputStream ois = new ObjectInputStream(client.getInputStream());
 				ObjectOutputStream oos = new ObjectOutputStream(client.getOutputStream());
 				
@@ -23,7 +24,7 @@ public class BrockerServer {
 				//때문에 독립적을 실행 가능한 또 다른 메인을 만들어 주는 것 
 				
 				BrockerServerThread bst = new BrockerServerThread(ois,oos);
-				Thread t = new Thread();//독립적으로 떨어져 나가도록 
+				Thread t = new Thread(bst);//독립적으로 떨어져 나가도록 
 				t.start();//runnable인터페이스를 구현한 BrockerServerThread의 run()에 정의된 내용이 독립적으로 실행
 			}//while
 			

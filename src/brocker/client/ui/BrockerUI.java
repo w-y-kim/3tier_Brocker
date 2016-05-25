@@ -137,6 +137,7 @@ public class BrockerUI implements ActionListener {
 	 */
 	public BrockerUI() {
 		initialize();// 새로 추가해도 새로 창 생기거나 갱신되지 않는 이유는?
+	
 	}
 
 	/**
@@ -447,7 +448,7 @@ public class BrockerUI implements ActionListener {
 				public void keyPressed(KeyEvent e) {
 					super.keyPressed(e);
 
-					if (거래주필드.getText().isEmpty() == true && 거래수량필드.getText().length() > 0) {
+					if (거래주필드.getText().isEmpty() == false && 거래수량필드.getText().length() == 0) {
 						확인.setEnabled(true);
 					} else {
 						stockJList.setEnabled(true);

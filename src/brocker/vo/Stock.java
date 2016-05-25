@@ -1,6 +1,8 @@
 package brocker.vo;
 
-public class Stock {
+import java.io.Serializable;
+
+public class Stock implements Serializable{
 	 private String symbol;
 	 private int price;
 	 

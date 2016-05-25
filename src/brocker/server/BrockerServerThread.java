@@ -20,7 +20,9 @@ public class BrockerServerThread implements Runnable {
 	private boolean exit;// 무한반복해서 실행할 때 문제가 .. 사용자가 접속 끊으면 readObject에서 예외가
 							// 터진다, 플래그 변수를 쓰는게 좋다
 	private Database db;
+	private Command cmd;
 
+	// private Command cmd_result = new Command();
 	public BrockerServerThread(ObjectInputStream ois, ObjectOutputStream oos) {
 		super();
 		this.ois = ois;// 명령값, 파라미터 정보
@@ -32,12 +34,11 @@ public class BrockerServerThread implements Runnable {
 	public void run() {// run 반복문 안의 플래그변수
 		while (!exit) {
 			try {
-				System.out.println("dddddddddddddddd");
 
-				Command cmd = (Command) ois.readObject();// 반환하는건 클라이언트가 보낸 요청인
-															// 커맨드 객체 , 메신저 역할을
-															// 하는 클래스를 설계한 것
-				Object[] para = cmd.getArgs();
+				cmd = (Command) ois.readObject();
+				// 커맨드 객체 , 메신저 역할을
+				// 하는 클래스를 설계한 것
+				Object[] para = (Object[]) cmd.getArgs();
 				// TODO 1.담겨있는 명령을 분기처리 하자!
 				switch (cmd.getCmdValue()) {
 
@@ -46,13 +47,14 @@ public class BrockerServerThread implements Runnable {
 					ArrayList<Stock> stockList = db.getAllStock();
 					cmd.setResult(stockList);
 					oos.writeObject(cmd);
+					System.out.println("서버 : GET_ALL_STOCKS 실행완료");
 
 					break;
-				case Command.GET_CUSTOMER:
+				case Command.GET_ALL_CUSTOMER:
 					ArrayList<Customer> custList = db.getAllCustomer();
 					cmd.setResult(custList);
 					oos.writeObject(cmd);
-
+					System.out.println("서버 : GET_ALL_CUSTOMER 실행완료");
 					break;
 
 				// 파라미터, 리턴 갖는 명령
@@ -60,6 +62,7 @@ public class BrockerServerThread implements Runnable {
 					ArrayList<Shares> portList = db.getPortfolio((String) para[0]);
 					cmd.setResult(portList);
 					oos.writeObject(cmd);
+					System.out.println("서버 : GET_PORTFOLIO 실행완료");
 					break;
 
 				// 리턴값 없는 명령들{추가,수정,삭제,매수,매도}
@@ -72,6 +75,7 @@ public class BrockerServerThread implements Runnable {
 					// Object result = new String("메소드실행");
 					// cmd.setResult(result);
 					// oos.writeObject(cmd);
+					System.out.println("서버 : ADD_CUSTOMER 실행완료");
 					break;
 				case Command.UPDATE_CUSTOMER:
 					Customer updated_cus = (Customer) para[0];// 서버에서 VO import
@@ -80,18 +84,22 @@ public class BrockerServerThread implements Runnable {
 					// Object result = new String("메소드실행");
 					// cmd.setResult(result);
 					// oos.writeObject(cmd);
+					System.out.println("서버 : UPDATE_CUSTOMER 실행완료");
 					break;
 
 				case Command.DELETE_CUSTOMER:
 					db.deleteCustomer((String) para[0]);
+					System.out.println("서버 : DELETE_CUSTOMER 실행완료");
 					break;
 				case Command.BUY_SHARES:
 					Shares boughtShare = (Shares) para[0];
 					db.buyShares(boughtShare);
+					System.out.println("서버 : BUY_SHARES 실행완료");
 					break;
 				case Command.SELL_SHARES:
 					Shares sellingShare = (Shares) para[0];
 					db.buyShares(sellingShare);
+					System.out.println("서버 : SELL_SHARES 실행완료");
 					break;
 				default:
 					break;

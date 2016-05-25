@@ -99,6 +99,7 @@ public class BrockerClient {
 	 * @throws RecordNotFoundException
 	 */
 	public ArrayList<Customer> getAllCustomer() throws RecordNotFoundException {
+		System.out.println("클라: getAllCustomer요청실행");
 		ArrayList<Customer> cusList = null;
 		try {
 
@@ -109,7 +110,6 @@ public class BrockerClient {
 
 			// 보냄
 			oos.writeObject(cmd);// 객체단위로 정보 보냄
-			System.out.println("11:" + cmd);
 			// 처리결과반환
 			cmd = (Command) ois.readObject();
 			
@@ -128,6 +128,7 @@ public class BrockerClient {
 	}
 
 	public ArrayList<Shares> getPortfolio(String ssn) throws RecordNotFoundException {
+		System.out.println("클라: getPortfolio요청실행");
 		ArrayList<Shares> shareList = null;
 		try {
 
@@ -164,6 +165,7 @@ public class BrockerClient {
 	 * @throws DuplicateIDException
 	 */
 	public void addCustomer(Customer c) throws DuplicateIDException {
+		System.out.println("클라: addCustomer요청실행");
 		// 명령정보와 파라미터값 전달
 		cmd.setCmdValue(Command.ADD_CUSTOMER);// 신규
 		Object[] array = { c };
@@ -191,19 +193,33 @@ public class BrockerClient {
 	}
 
 	public void deleteCustomer(String ssn) throws RecordNotFoundException {
-		cmd.setCmdValue(cmd.DELETE_CUSTOMER);// 삭제
+		try {
+		cmd.setCmdValue(Command.DELETE_CUSTOMER);// 삭제
+		Object[] array = { ssn };
+		cmd.setArgs(array);
+		
+		// 보냄
+			oos.writeObject(cmd);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}// 객체단위로 정보 보냄
+		System.out.println("클라: deleteCustomer요청실행");
 	}
 
 	public void updateCustomer(Customer c) throws RecordNotFoundException {
-		cmd.setCmdValue(cmd.UPDATE_CUSTOMER);// 수정
+		cmd.setCmdValue(Command.UPDATE_CUSTOMER);// 수정
+		System.out.println("클라: updateCustomer요청실행");
 	}
 
 	public void buyShares(Shares s) {
-		cmd.setCmdValue(70);// 매수
+		cmd.setCmdValue(Command.BUY_SHARES);// 매수
+		System.out.println("클라: buyShares요청실행");
+
 	}
 
 	public void sellShares(Shares s) throws InvalidTransactionException, RecordNotFoundException {
-		cmd.setCmdValue(80);// 매도
+		cmd.setCmdValue(Command.SELL_SHARES);// 매도
+		System.out.println("클라: sellShares요청실행");
 	}
 	// 내부로직 메소드나 안쓰는 메소드는 일단 @Deprecated
 
