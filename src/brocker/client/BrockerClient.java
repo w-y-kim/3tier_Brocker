@@ -81,7 +81,7 @@ public class BrockerClient {
 			cmd = (Command) ois.readObject();//여기서 못받아와서 명령도실행안됨
 			System.out.println(stockList);
 			stockList = (ArrayList<Stock>) cmd.getResult();
-
+//
 			// 예외처리결과(어차피 UI에서 해주지 않나?)
 			int key = cmd.getStatus();
 			if (key == Command.RECORD_NOTFOUND) {
