@@ -173,7 +173,6 @@ public class BrockerUI implements ActionListener {
 		stock_area.add(scrollPane);
 		// 주식리스트
 		dlm = new DefaultListModel<Stock>();
-		
 		stockJList = new JList(dlm);
 		stockJList.setFont(new Font("나눔바른고딕", Font.PLAIN, 11));
 		scrollPane.setViewportView(stockJList);

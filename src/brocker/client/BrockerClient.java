@@ -23,7 +23,6 @@ public class BrockerClient {
 
 	// 명령 및 파라미터 전달 위한 Command객체 생성 >> 서버스레드로 간다
 	private Command cmd = new Command();
-	private ArrayList<Stock> stockList;
 
 	public BrockerClient() {
 		Socket socket;
@@ -69,17 +68,16 @@ public class BrockerClient {
 
 
 	public ArrayList<Stock> getAllStock() throws RecordNotFoundException {
-		stockList = null;
+		ArrayList<Stock> stockList = null;
+		Command cmd = new Command(Command.GET_ALL_STOCKS);
 		try {
 		// 명령정보전달(파라미터없음)
-		Command cmd = new Command(Command.GET_ALL_STOCKS);
 
 		// 보냄
 			oos.writeObject(cmd);
 			
-			// 처리결과반환
+			// 처리결과반환in 
 			cmd = (Command) ois.readObject();//여기서 못받아와서 명령도실행안됨
-			System.out.println(stockList);
 			stockList = (ArrayList<Stock>) cmd.getResult();
 //
 			// 예외처리결과(어차피 UI에서 해주지 않나?)
@@ -111,9 +109,10 @@ public class BrockerClient {
 
 			// 보냄
 			oos.writeObject(cmd);// 객체단위로 정보 보냄
-
+			System.out.println("11:" + cmd);
 			// 처리결과반환
 			cmd = (Command) ois.readObject();
+			
 			cusList = (ArrayList<Customer>) cmd.getResult();
 
 			// 예외처리결과(어차피 UI에서 해주지 않나?)
