@@ -152,11 +152,12 @@ public class BrockerUI implements ActionListener {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 
-		top_panel = new JPanel();
-		top_panel.setBackground(Color.ORANGE);
-		top_panel.setForeground(Color.DARK_GRAY);
-		top_panel.setBounds(0, 0, 727, 26);
-		frame.getContentPane().add(top_panel);
+//		top_panel = new JPanel();
+		Tape tape = new Tape(this, db);
+		tape.setBackground(Color.ORANGE);
+		tape.setForeground(Color.DARK_GRAY);
+		tape.setBounds(0, 0, 727, 26);
+		frame.getContentPane().add(tape);
 
 		body_panel = new JPanel();
 		body_panel.setBackground(Color.GRAY);
