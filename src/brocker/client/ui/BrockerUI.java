@@ -46,8 +46,8 @@ import javax.swing.JProgressBar;
 
 public class BrockerUI implements ActionListener {
 
-	public JFrame frame;//TODO 프레임을 client의 생성자에서 setvisible해주도록 해서 일단 public
-
+	private JFrame frame;//TODO 프레임을 client의 생성자에서 setvisible해주도록 해서 일단 public
+	
 	// 상단광고
 	private JPanel top_panel;
 
@@ -113,6 +113,7 @@ public class BrockerUI implements ActionListener {
 	private int strLength;
 	private JButton 종료;
 
+	
 	
 	/**
 	 * Launch the application.
@@ -574,10 +575,12 @@ public class BrockerUI implements ActionListener {
 				Object selectedValue = null;
 				selectedValue = (Customer) customerJList.getSelectedValue();
 				setTextFieldValue((Customer) selectedValue);// 선택된 객체를 필드에 넣음
+				거래수량필드.setText("");//키보드리스너 때문에 
 
 				Customer cus = (Customer) selectedValue;// 선택한 객체의 주민번호 사용하려고
 
 				try {
+					
 					dlm3.removeAllElements();// 초기화하는 것은 고객별 포트폴리오
 					ArrayList<Shares> portList = db.getPortfolio(cus.getSsn());
 					for (Shares e : portList) {
@@ -599,7 +602,6 @@ public class BrockerUI implements ActionListener {
 			} else if (me.getSource() == stockJList) {
 				Object selectedValue = null;
 				selectedValue = (Stock) stockJList.getSelectedValue();
-				// clearAll(stockJList);//필요없는거 같음
 				setTextFieldValue((Stock) selectedValue);
 			} else if (me.getSource() == portJList) {
 				Object selectedValue = null;
@@ -782,6 +784,16 @@ public class BrockerUI implements ActionListener {
 			// TODO clearAll을 합칠 순 없을까?
 			initCustomerButton(true);
 			clearAll();
+			try {// TODO 멤버변수였던걸 로컬로 바꾸니까 갑자기 dlm2가 갱신 잘됨 뭐지 ??
+				ArrayList<Customer> cusList = db.getAllCustomer();
+				dlm2.removeAllElements();
+				dlm3.removeAllElements();
+				for (Customer e3 : cusList) {
+					dlm2.addElement(e3);
+				}
+			} catch (RecordNotFoundException e1) {
+				e1.printStackTrace();
+			}
 
 		} else if (e.getSource() == 취소) {
 			clearAll();
@@ -827,5 +839,9 @@ public class BrockerUI implements ActionListener {
 
 	public void showMessage(String msg) {
 		JOptionPane.showMessageDialog(null, msg);
+	}
+
+	public int tapeInsertOnFrame(){
+		return frame.WIDTH;
 	}
 }

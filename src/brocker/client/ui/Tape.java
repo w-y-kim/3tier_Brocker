@@ -25,9 +25,10 @@ public class Tape extends JPanel implements Runnable {
 		this.db = db;
 		
 		this.setBackground(Color.GREEN);
-		this.setPreferredSize(new Dimension(this.parent.frame.WIDTH, 25));
+		this.setPreferredSize(new Dimension(this.parent.tapeInsertOnFrame(), 25));
 		//windowbuilder로 만들면 JFrame을 변수로 포함(composite)하기 때문에
 		//UI에서 프레임을 상속받거나 프레임을 public으로 만들어줌 
+		//최종버전에서는 메소드로 만들어서 변수에 접근하였음 
 		try {
 			getTapeString();
 		} catch (Exception e) {

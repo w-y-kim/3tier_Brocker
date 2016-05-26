@@ -47,6 +47,11 @@ insert into customer values( '111-117', 'Yufirst7', 'Seoul');
 insert into customer values( '111-118', 'Yufirst8', 'Seoul');
 insert into customer values( '111-119', 'Yufirst9', 'Seoul');
 
+insert into shares values( '111-111', 'SUNW', 100);
+insert into shares values( '111-112', 'CyAs', 200);
+insert into shares values( '111-113', 'ABStk',300);
+insert into shares values( '111-114', 'BWInc',400);
+insert into shares values( '111-119', 'JDK', 500);
 
 UPDATE CUSTOMER set cus_name = '김사랑' where id ='111-111'
 
@@ -58,11 +63,7 @@ select * from Customer
 Select ssn from customer where ssn = '111-111'
 
 
-insert into shares values( '111-111', 'SUNW', 100);
-insert into shares values( '111-112', 'CyAs', 200);
-insert into shares values( '111-113', 'ABStk',300);
-insert into shares values( '111-114', 'BWInc',400);
-insert into shares values( '111-119', 'JDK', 500);
+
 
 
 commit
