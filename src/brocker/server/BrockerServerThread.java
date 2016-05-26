@@ -11,6 +11,7 @@ import brocker.vo.Shares;
 import brocker.vo.Stock;
 import brocker.dao.Database;
 import brocker.exception.DuplicateIDException;
+import brocker.exception.InvalidTransactionException;
 import brocker.exception.RecordNotFoundException;
 
 public class BrockerServerThread implements Runnable {
@@ -98,10 +99,11 @@ public class BrockerServerThread implements Runnable {
 					break;
 				case Command.SELL_SHARES:
 					Shares sellingShare = (Shares) para[0];
-					db.buyShares(sellingShare);
+					db.sellShares(sellingShare);
 					System.out.println("서버 : SELL_SHARES 실행완료");
 					break;
 				default:
+					System.out.println("Command 조건이 헛돌고 있습니다.");
 					break;
 				}
 			} catch (ClassNotFoundException e) {
@@ -114,6 +116,9 @@ public class BrockerServerThread implements Runnable {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (DuplicateIDException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvalidTransactionException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

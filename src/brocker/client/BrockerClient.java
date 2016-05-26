@@ -133,9 +133,7 @@ public class BrockerClient {
 		try {
 
 			// 명령정보만 전달(파라미터 ssn)
-			// cmd.setCmdValue(Command.GET_ALL_CUSTOMER);// 리스트조회
 			Command cmd = new Command(Command.GET_PORTFOLIO);
-			// 파라미터없음
 			Object[] array = { ssn };
 			cmd.setArgs(array);
 			
@@ -166,60 +164,120 @@ public class BrockerClient {
 	 */
 	public void addCustomer(Customer c) throws DuplicateIDException {
 		System.out.println("클라: addCustomer요청실행");
-		// 명령정보와 파라미터값 전달
-		cmd.setCmdValue(Command.ADD_CUSTOMER);// 신규
-		Object[] array = { c };
-		cmd.setArgs(array);
+		try {
+			// 명령정보만 전달(파라미터 ssn)
+			Command cmd = new Command(Command.ADD_CUSTOMER);
+			Object[] array = { c };
+			cmd.setArgs(array);
+			
+			// 보냄
+			oos.writeObject(cmd);// 객체단위로 정보 보냄
 
-		// oos cmd
+			// 처리결과반환없음
 
-		// 처리결과반환, 추가의 경우 없지 않나
-		cmd.getResult();// 추가결과
+			// 예외처리결과(어차피 UI에서 해주지 않나?)
+			int key = cmd.getStatus();
+			if (key == Command.RECORD_NOTFOUND) {
+				throw new DuplicateIDException();
+			}
 
-		// 예외처리결과
-		int key = cmd.getStatus();
-
-		switch (key) {
-		case Command.DUPLICATE_ID:
-
-			break;
-
-		default:
-			break;
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-
-		// cmd.setCmdValue(90);//dlm3
 
 	}
 
 	public void deleteCustomer(String ssn) throws RecordNotFoundException {
+		System.out.println("클라: deleteCustomer요청실행");
 		try {
-		cmd.setCmdValue(Command.DELETE_CUSTOMER);// 삭제
-		Object[] array = { ssn };
-		cmd.setArgs(array);
-		
-		// 보냄
-			oos.writeObject(cmd);
+			// 명령정보만 전달(파라미터 ssn)
+			Command cmd = new Command(Command.DELETE_CUSTOMER);
+			Object[] array = { ssn };
+			cmd.setArgs(array);
+			
+			// 보냄
+			oos.writeObject(cmd);// 객체단위로 정보 보냄
+
+			// 처리결과반환없음
+
+			// 예외처리결과(어차피 UI에서 해주지 않나?)
+			int key = cmd.getStatus();
+			if (key == Command.RECORD_NOTFOUND) {
+				throw new RecordNotFoundException();
+			}
+
 		} catch (IOException e) {
 			e.printStackTrace();
-		}// 객체단위로 정보 보냄
-		System.out.println("클라: deleteCustomer요청실행");
+		}
+
 	}
 
 	public void updateCustomer(Customer c) throws RecordNotFoundException {
-		cmd.setCmdValue(Command.UPDATE_CUSTOMER);// 수정
 		System.out.println("클라: updateCustomer요청실행");
+		try {
+			// 명령정보만 전달(파라미터 ssn)
+			Command cmd = new Command(Command.UPDATE_CUSTOMER);
+			Object[] array = { c };
+			cmd.setArgs(array);
+			
+			// 보냄
+			oos.writeObject(cmd);// 객체단위로 정보 보냄
+
+			// 처리결과반환없음
+
+			// 예외처리결과(어차피 UI에서 해주지 않나?)
+			int key = cmd.getStatus();
+			if (key == Command.RECORD_NOTFOUND) {
+				throw new RecordNotFoundException();
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void buyShares(Shares s) {
-		cmd.setCmdValue(Command.BUY_SHARES);// 매수
 		System.out.println("클라: buyShares요청실행");
+		try {
+			// 명령정보만 전달(파라미터 ssn)
+			Command cmd = new Command(Command.BUY_SHARES);
+			Object[] array = { s };
+			cmd.setArgs(array);
+			
+			// 보냄
+			oos.writeObject(cmd);// 객체단위로 정보 보냄
+
+			// 처리결과반환없음
+
+			// 예외처리결과(어차피 UI에서 해주지 않나?)
+			
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
 	}
 
 	public void sellShares(Shares s) throws InvalidTransactionException, RecordNotFoundException {
-		cmd.setCmdValue(Command.SELL_SHARES);// 매도
 		System.out.println("클라: sellShares요청실행");
+		try {
+			// 명령정보만 전달(파라미터 ssn)
+			Command cmd = new Command(Command.SELL_SHARES);
+			Object[] array = { s };
+			cmd.setArgs(array);
+			
+			// 보냄
+			oos.writeObject(cmd);// 객체단위로 정보 보냄
+
+			// 처리결과반환없음
+
+			// 예외처리결과(어차피 UI에서 해주지 않나?)
+			
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 	}
 	// 내부로직 메소드나 안쓰는 메소드는 일단 @Deprecated
 
