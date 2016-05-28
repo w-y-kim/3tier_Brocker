@@ -8,9 +8,12 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 import brocker.exception.*;
+import brocker.protocol.Command;
 import brocker.vo.*;
 
 public class Database {
+
+	public int error;
 
 	/**
 	 * [find] Customer 테이블에 SSN의 존재 유무를 확인
@@ -19,7 +22,7 @@ public class Database {
 	 * @param ssn존재유무확인하고자
 	 *            하는 고객의 ssn
 	 */
-	public boolean ssnExist(String ssn) {
+	public boolean ssnExist(String ssn){
 		boolean result = false;
 
 		// Statement 방식을 쓰면 setString 못쓰고, sql도 executeQuery에 넣어줘야함
@@ -51,7 +54,7 @@ public class Database {
 		return result;
 	}
 
-	public  boolean ssnExist2(String ssn, String symbol) {
+	public boolean ssnExist2(String ssn, String symbol) {
 		boolean result = false;
 
 		// Statement 방식을 쓰면 setString 못쓰고, sql도 executeQuery에 넣어줘야함
@@ -66,6 +69,37 @@ public class Database {
 			PreparedStatement pstat = con.prepareStatement(sql);
 			pstat.setString(1, ssn);
 			pstat.setString(2, symbol);
+			ResultSet rs = pstat.executeQuery();
+
+			// System.out.println(rs.next());//한번 쓸때마다 줄이 바뀌기 때문에 주의할것
+			if (rs.next()) {// TODO rs.next()를 쓰면 안됨, 어떻게하지?해결 일단 DB문제였음
+				System.out.println("레코드가 true");
+				result = true;
+			} else {
+				System.out.println("레코드 false");
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			ConnectionManager.close(con);
+		}
+		return result;
+	}
+	public boolean ssnExist3(String ssn) throws DuplicateIDException {
+		boolean result = false;
+
+		// Statement 방식을 쓰면 setString 못쓰고, sql도 executeQuery에 넣어줘야함
+		// String sql = "select * from Customer where ssn =" + "'" + ssn + "'";
+		// Statement stat = con.createStatement();
+		// ResultSet rs = stat.executeQuery(sql);
+
+		Connection con = ConnectionManager.getConnection();
+		String sql = "select * from Customer where ssn = ?";
+
+		try {
+			PreparedStatement pstat = con.prepareStatement(sql);
+			pstat.setString(1, ssn);
 			ResultSet rs = pstat.executeQuery();
 
 			// System.out.println(rs.next());//한번 쓸때마다 줄이 바뀌기 때문에 주의할것
@@ -137,16 +171,16 @@ public class Database {
 		try {
 			PreparedStatement pstat = con.prepareStatement(sql);
 			ResultSet rs = pstat.executeQuery();
-			int i=1;
+			int i = 1;
 			while (rs.next()) {
 				String ssn = rs.getString("ssn");
 				String cust_name = rs.getString("cust_name");
 				String address = rs.getString("address");
 				Customer cus = new Customer(ssn, cust_name, address);
 				list.add(cus);
-				i++; 
+				i++;
 			}
-			System.out.println(i+"명의 고객 정보가져옴");
+			System.out.println(i + "명의 고객 정보가져옴");
 
 		} catch (SQLException e) {
 
@@ -168,32 +202,43 @@ public class Database {
 	 * @throws DuplicateIDException등록하고자
 	 *             하는 고객의 ssn이 이미 존재할 경우 발생
 	 */
-	public void addCustomer(Customer c) throws DuplicateIDException {
-
-		if (ssnExist(c.getSsn()))//TODO 여기 왜 ! 빼야함. 말이 안된다
-			throw new DuplicateIDException(); // 존재하지 않는 경우 예외처리
-
+	public void addCustomer(Customer c) {
 		Connection con = ConnectionManager.getConnection();
 		String sql = "INSERT INTO CUSTOMER VALUES(?,?,?)";
-
 		try {
-			PreparedStatement pstat = con.prepareStatement(sql);
-			pstat.setString(1, c.getSsn());
-			pstat.setString(2, c.getCust_name());
-			pstat.setString(3, c.getAddress());
-			int result = pstat.executeUpdate();
-			if (result == 1) {
-				System.out.println("등록완료");
-			} else {
-				System.out.println("등록안됨");
-			}
+			// if(ssnExist(c.getSsn()) ) {throw new DuplicateIDException();}
+			ssnExist3(c.getSsn());//검사만 해 ! 그리고 예외발생하면 catch로 줘! 
+			//// error = -10;//클라에도 따로 에러 전달하려면 변수가 필요
+			// //예외가 발생한 순간 해당 메소드를 발생시킨 지점에서 멈추고 예외클래스로
+			// //넘어가기 때문에 throws가 최종적으로 클라이언트로 가지 않는 이상 불가능한게
+			// //아닌지???
+			// throw new DuplicateIDException();
+			// }
+			// else {
+			
 
+		
+				PreparedStatement pstat = con.prepareStatement(sql);
+				pstat.setString(1, c.getSsn());
+				pstat.setString(2, c.getCust_name());
+				pstat.setString(3, c.getAddress());
+				int result = pstat.executeUpdate();
+				if (result == 1) {
+					System.out.println("등록완료");
+				} else {
+					System.out.println("등록안됨");
+				}
+
+			
+			// }
+		} catch (DuplicateIDException e) {
+			e.printStackTrace();
 		} catch (SQLException e) {
-
-		} finally {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally {
 			ConnectionManager.close(con);
 		}
-
 	}
 
 	/**
@@ -330,11 +375,9 @@ public class Database {
 		return list;
 
 	}
-	
-	
+
 	public ArrayList<Stock> getAllStock() throws RecordNotFoundException {
 		ArrayList<Stock> list = new ArrayList<>();
-
 
 		Connection con = ConnectionManager.getConnection();
 		// String sql = "SELECT * FROM stock c, shares s where c.? = s.?";
@@ -510,32 +553,33 @@ public class Database {
 				pstat.setString(1, s.getSsn());
 				pstat.setString(2, s.getSymbol());
 				ResultSet rs = pstat.executeQuery();
-				if (rs.next()) {//rs.next()를 안쓰면 밑에서 rs.getString("")을 못쓴다 rs, stat 은 무조건 1회성이다.
-					
-				int nowQuantity = Integer.parseInt(rs.getString("quantity"));
-				if (nowQuantity > s.getQuantity()) {	
-					// 기존 수량 존재 시
-					sql = "UPDATE SHARES SET quantity = quantity - ? where ssn = ? AND symbol = ?";
-					pstat = con.prepareStatement(sql);
-					pstat.setInt(1, s.getQuantity());
-					pstat.setString(2, s.getSsn());
-					pstat.setString(3, s.getSymbol());
-					pstat.executeUpdate();
-				} else if (nowQuantity == s.getQuantity()) {
-					// 레코드 삭제
+				if (rs.next()) {// rs.next()를 안쓰면 밑에서 rs.getString("")을 못쓴다 rs,
+								// stat 은 무조건 1회성이다.
 
-					try {
-						sql = "DELETE FROM SHARES where quantity = ? AND symbol =? ";
+					int nowQuantity = Integer.parseInt(rs.getString("quantity"));
+					if (nowQuantity > s.getQuantity()) {
+						// 기존 수량 존재 시
+						sql = "UPDATE SHARES SET quantity = quantity - ? where ssn = ? AND symbol = ?";
 						pstat = con.prepareStatement(sql);
 						pstat.setInt(1, s.getQuantity());
-						pstat.setString(2, s.getSymbol());
+						pstat.setString(2, s.getSsn());
+						pstat.setString(3, s.getSymbol());
 						pstat.executeUpdate();
+					} else if (nowQuantity == s.getQuantity()) {
+						// 레코드 삭제
 
-					} catch (Exception e) {
-						// TODO: handle exception
-					} finally {
-						ConnectionManager.close(con);
-					}
+						try {
+							sql = "DELETE FROM SHARES where quantity = ? AND symbol =? ";
+							pstat = con.prepareStatement(sql);
+							pstat.setInt(1, s.getQuantity());
+							pstat.setString(2, s.getSymbol());
+							pstat.executeUpdate();
+
+						} catch (Exception e) {
+							// TODO: handle exception
+						} finally {
+							ConnectionManager.close(con);
+						}
 
 					}
 				} else {
@@ -552,148 +596,148 @@ public class Database {
 
 	}
 
-	
-//	   public void sellShares(Shares s)throws InvalidTransactionException{
-//		      Connection con = ConnectionManager.getConnection();
-//		      String sql ="SELECT quantity FROM shares WHERE ssn = ? AND symbol = ? ";
-//		      try{
-//		      PreparedStatement stmt = con.prepareStatement(sql);
-//		      stmt.setString(1, s.getSsn());
-//		      stmt.setString(2, s.getSymbol());
-//		      ResultSet rs = stmt.executeQuery();
-//		      if(rs.next()){
-//		      String quan =   rs.getString("quantity");
-//		      int ownQuan = Integer.parseInt(quan);
-//		      int getQuan = Integer.parseInt(s.getQuantity());
-//		      if(ownQuan > getQuan){
-//		      sql = "UPDATE shares SET quantity = quantity - ? WHERE ssn = ? AND symbol = ?";
-//		      stmt = con.prepareStatement(sql);
-//		      stmt.setString(1, s.getQuantity());
-//		      stmt.setString(2, s.getSsn());
-//		      stmt.setString(3, s.getSymbol());
-//		      int row = stmt.executeUpdate();
-//		      System.out.println(row + "개 정보가 update 되었습니다.");
-//		      }else if(ownQuan == getQuan){
-//		      sql = "DELETE FROM SHARES WHERE ssn = ? AND symbol = ?";   
-//		      stmt = con.prepareStatement(sql);
-//		      stmt.setString(1, s.getSsn());
-//		      stmt.setString(2, s.getSymbol());
-//		      int row  = stmt.executeUpdate();
-//		      System.out.println(row + "개 정보를 shares 테이블에서 삭제");
-//		      }else if(ownQuan < getQuan){
-//		         throw new InvalidTransactionException();
-//		      }
-//		      }else{
-//		         throw new InvalidTransactionException();
-//		      }
-//		      }catch(SQLException e){
-//		         e.printStackTrace();
-//		      }finally{
-//		         ConnectionManager.close(con);
-//		      }
-//		   } 
-	
-//	public static void main(String[] args) {
-//		Database db = new Database();
-//
-//		// 찾기(중복검사)
-//
-//		// boolean result = db.ssnExist("111-112");
-//		// System.out.println(result);
-//
-//		System.out.println("=====================================");
-//
-//		// 컬럼하나출력
-//
-//		// try {
-//		// Customer c = db.getCustomer("111-112");
-//		// String str = c.toString();
-//		// System.out.println(str);
-//		// // System.out.println(c);//toString생략
-//		// } catch (RecordNotFoundException e) {
-//		// e.printStackTrace();
-//		// }
-//
-//		System.out.println("=====================================");
-//
-//		// 전체출력
-//
-//		// try {
-//		// ArrayList<Customer> result = db.getAllCustomer();
-//		//
-//		// for (int i = 0; i < result.size(); i++) {
-//		// Customer c = result.get(i);
-//		// System.out.println(c);
-//		// String str = c.toString();
-//		// System.out.println(str);
-//		// }
-//		// } catch (RecordNotFoundException e) {
-//		// e.printStackTrace();
-//		// }
-//
-//		System.out.println("=====================================");
-//
-//		// 추가
-//
-//		// Customer c_insert = new Customer("111-111", "김사람", "강남");
-//		// try {
-//		// db.addCustomer(c_insert);
-//		// } catch (DuplicateIDException e) {
-//		// e.printStackTrace();
-//		// }
-//
-//		System.out.println("=====================================");
-//
-//		// 삭제
-//
-//		// try {
-//		// db.deleteCustomer("111-119");
-//		// } catch (RecordNotFoundException e) {
-//		// e.printStackTrace();
-//		// }
-//
-//		System.out.println("=====================================");
-//
-//		// 업데이트
-//
-//		// Customer c_update = new Customer("111-111", "김사람", "강남");
-//		// try {
-//		// db.updateCustomer(c_update);
-//		// } catch (RecordNotFoundException e) {
-//		// e.printStackTrace();
-//		// }
-//
-//		System.out.println("=====================================");
-//
-//		// get_shares테이블
-//
-//		// ArrayList<Shares> result;
-//		// try {
-//		// result = db.getPortfolio("111-112");
-//		// for (int i = 0; i < result.size(); i++) {
-//		// Shares s = result.get(i);
-//		// System.out.println(s);
-//		// }
-//		// for (Shares s : result) {
-//		// System.out.println(s.toString());
-//		// }
-//		// } catch (RecordNotFoundException e) {
-//		// // TODO Auto-generated catch block
-//		// e.printStackTrace();
-//		// }
-//
-//		// get_stocks주식정보 테이블
-//		Shares s1 = new Shares("111-111", "SUNW", 3000);// 기존주식
-//		Shares s2 = new Shares("111-111", "JDK", 1000);// 신규주식
-//
-//		// db.buyShares(s1); //추가매입
-//		// db.buyShares(s2); //신규매입
-//
-//		 try {
-//			db.sellShares(s1);
-//		} catch (InvalidTransactionException | RecordNotFoundException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}//
-//	}
+	// public void sellShares(Shares s)throws InvalidTransactionException{
+	// Connection con = ConnectionManager.getConnection();
+	// String sql ="SELECT quantity FROM shares WHERE ssn = ? AND symbol = ? ";
+	// try{
+	// PreparedStatement stmt = con.prepareStatement(sql);
+	// stmt.setString(1, s.getSsn());
+	// stmt.setString(2, s.getSymbol());
+	// ResultSet rs = stmt.executeQuery();
+	// if(rs.next()){
+	// String quan = rs.getString("quantity");
+	// int ownQuan = Integer.parseInt(quan);
+	// int getQuan = Integer.parseInt(s.getQuantity());
+	// if(ownQuan > getQuan){
+	// sql = "UPDATE shares SET quantity = quantity - ? WHERE ssn = ? AND symbol
+	// = ?";
+	// stmt = con.prepareStatement(sql);
+	// stmt.setString(1, s.getQuantity());
+	// stmt.setString(2, s.getSsn());
+	// stmt.setString(3, s.getSymbol());
+	// int row = stmt.executeUpdate();
+	// System.out.println(row + "개 정보가 update 되었습니다.");
+	// }else if(ownQuan == getQuan){
+	// sql = "DELETE FROM SHARES WHERE ssn = ? AND symbol = ?";
+	// stmt = con.prepareStatement(sql);
+	// stmt.setString(1, s.getSsn());
+	// stmt.setString(2, s.getSymbol());
+	// int row = stmt.executeUpdate();
+	// System.out.println(row + "개 정보를 shares 테이블에서 삭제");
+	// }else if(ownQuan < getQuan){
+	// throw new InvalidTransactionException();
+	// }
+	// }else{
+	// throw new InvalidTransactionException();
+	// }
+	// }catch(SQLException e){
+	// e.printStackTrace();
+	// }finally{
+	// ConnectionManager.close(con);
+	// }
+	// }
+
+	// public static void main(String[] args) {
+	// Database db = new Database();
+	//
+	// // 찾기(중복검사)
+	//
+	// // boolean result = db.ssnExist("111-112");
+	// // System.out.println(result);
+	//
+	// System.out.println("=====================================");
+	//
+	// // 컬럼하나출력
+	//
+	// // try {
+	// // Customer c = db.getCustomer("111-112");
+	// // String str = c.toString();
+	// // System.out.println(str);
+	// // // System.out.println(c);//toString생략
+	// // } catch (RecordNotFoundException e) {
+	// // e.printStackTrace();
+	// // }
+	//
+	// System.out.println("=====================================");
+	//
+	// // 전체출력
+	//
+	// // try {
+	// // ArrayList<Customer> result = db.getAllCustomer();
+	// //
+	// // for (int i = 0; i < result.size(); i++) {
+	// // Customer c = result.get(i);
+	// // System.out.println(c);
+	// // String str = c.toString();
+	// // System.out.println(str);
+	// // }
+	// // } catch (RecordNotFoundException e) {
+	// // e.printStackTrace();
+	// // }
+	//
+	// System.out.println("=====================================");
+	//
+	// // 추가
+	//
+	// // Customer c_insert = new Customer("111-111", "김사람", "강남");
+	// // try {
+	// // db.addCustomer(c_insert);
+	// // } catch (DuplicateIDException e) {
+	// // e.printStackTrace();
+	// // }
+	//
+	// System.out.println("=====================================");
+	//
+	// // 삭제
+	//
+	// // try {
+	// // db.deleteCustomer("111-119");
+	// // } catch (RecordNotFoundException e) {
+	// // e.printStackTrace();
+	// // }
+	//
+	// System.out.println("=====================================");
+	//
+	// // 업데이트
+	//
+	// // Customer c_update = new Customer("111-111", "김사람", "강남");
+	// // try {
+	// // db.updateCustomer(c_update);
+	// // } catch (RecordNotFoundException e) {
+	// // e.printStackTrace();
+	// // }
+	//
+	// System.out.println("=====================================");
+	//
+	// // get_shares테이블
+	//
+	// // ArrayList<Shares> result;
+	// // try {
+	// // result = db.getPortfolio("111-112");
+	// // for (int i = 0; i < result.size(); i++) {
+	// // Shares s = result.get(i);
+	// // System.out.println(s);
+	// // }
+	// // for (Shares s : result) {
+	// // System.out.println(s.toString());
+	// // }
+	// // } catch (RecordNotFoundException e) {
+	// // // TODO Auto-generated catch block
+	// // e.printStackTrace();
+	// // }
+	//
+	// // get_stocks주식정보 테이블
+	// Shares s1 = new Shares("111-111", "SUNW", 3000);// 기존주식
+	// Shares s2 = new Shares("111-111", "JDK", 1000);// 신규주식
+	//
+	// // db.buyShares(s1); //추가매입
+	// // db.buyShares(s2); //신규매입
+	//
+	// try {
+	// db.sellShares(s1);
+	// } catch (InvalidTransactionException | RecordNotFoundException e) {
+	// // TODO Auto-generated catch block
+	// e.printStackTrace();
+	// }//
+	// }
 }

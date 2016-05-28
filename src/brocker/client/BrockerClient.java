@@ -23,6 +23,7 @@ public class BrockerClient {
 
 	// 명령 및 파라미터 전달 위한 Command객체 생성 >> 서버스레드로 간다
 	private Command cmd = new Command();
+	public static int error;
 
 	public BrockerClient() {
 		Socket socket;
@@ -49,7 +50,6 @@ public class BrockerClient {
 			// }
 			// oos.writeObject(cmd);
 			// }
-
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -81,8 +81,8 @@ public class BrockerClient {
 			stockList = (ArrayList<Stock>) cmd.getResult();
 //
 			// 예외처리결과(어차피 UI에서 해주지 않나?)
-			int key = cmd.getStatus();
-			if (key == Command.RECORD_NOTFOUND) {
+			error = cmd.getStatus();
+			if (error == Command.RECORD_NOTFOUND) {
 				throw new RecordNotFoundException();
 			}
 			
@@ -116,8 +116,8 @@ public class BrockerClient {
 			cusList = (ArrayList<Customer>) cmd.getResult();
 
 			// 예외처리결과(어차피 UI에서 해주지 않나?)
-			int key = cmd.getStatus();
-			if (key == Command.RECORD_NOTFOUND) {
+			error = cmd.getStatus();
+			if (error == Command.RECORD_NOTFOUND) {
 				throw new RecordNotFoundException();
 			}
 
@@ -144,9 +144,8 @@ public class BrockerClient {
 			cmd = (Command) ois.readObject();
 			shareList = (ArrayList<Shares>) cmd.getResult();
 
-			// 예외처리결과(어차피 UI에서 해주지 않나?)
-			int key = cmd.getStatus();
-			if (key == Command.RECORD_NOTFOUND) {
+			error = cmd.getStatus();
+			if (error == Command.RECORD_NOTFOUND) {
 				throw new RecordNotFoundException();
 			}
 
@@ -162,8 +161,8 @@ public class BrockerClient {
 	 * @param c
 	 * @throws DuplicateIDException
 	 */
-	public void addCustomer(Customer c) throws DuplicateIDException {
-		System.out.println("클라: addCustomer요청실행");
+	public void addCustomer(Customer c) throws DuplicateIDException{
+		System.out.println("클라: addCustomer요청");
 		try {
 			// 명령정보만 전달(파라미터 ssn)
 			Command cmd = new Command(Command.ADD_CUSTOMER);
@@ -174,14 +173,17 @@ public class BrockerClient {
 			oos.writeObject(cmd);// 객체단위로 정보 보냄
 
 			// 처리결과반환없음
-
-			// 예외처리결과(어차피 UI에서 해주지 않나?)
-			int key = cmd.getStatus();
-			if (key == Command.RECORD_NOTFOUND) {
-				throw new DuplicateIDException();
+			// 예외처리결과(어차피 UI에서 해주지 않나?-안해줌)
+			System.out.println("클라: addCustomer실행완료");
+			cmd = (Command) ois.readObject();//db의 error변수도 포함되어있음
+			error = cmd.getStatus();
+			if(error == Command.DUPLICATE_ID) {
+				throw new DuplicateIDException(); 
 			}
-
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -201,8 +203,8 @@ public class BrockerClient {
 			// 처리결과반환없음
 
 			// 예외처리결과(어차피 UI에서 해주지 않나?)
-			int key = cmd.getStatus();
-			if (key == Command.RECORD_NOTFOUND) {
+			error = cmd.getStatus();
+			if (error == Command.RECORD_NOTFOUND) {
 				throw new RecordNotFoundException();
 			}
 
@@ -226,8 +228,8 @@ public class BrockerClient {
 			// 처리결과반환없음
 
 			// 예외처리결과(어차피 UI에서 해주지 않나?)
-			int key = cmd.getStatus();
-			if (key == Command.RECORD_NOTFOUND) {
+			error = cmd.getStatus();
+			if (error == Command.RECORD_NOTFOUND) {
 				throw new RecordNotFoundException();
 			}
 

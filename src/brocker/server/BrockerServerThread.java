@@ -69,8 +69,14 @@ public class BrockerServerThread implements Runnable {
 				// 리턴값 없는 명령들{추가,수정,삭제,매수,매도}
 				case Command.ADD_CUSTOMER:
 					Customer c = (Customer) para[0];// 서버에서 VO import
-					db.addCustomer(c);// 처리완료
-
+//					try {
+						db.addCustomer(c);
+//					} 
+//					catch (DuplicateIDException e) {
+//						cmd.setStatus(Command.DUPLICATE_ID);
+//						oos.writeObject(cmd);//void라서 따로 결과는 없고 예외를 보내자
+//					}
+					// 처리완료
 					// cmd.setStatus(-20);// 예외발생하면 보내줌
 
 					// Object result = new String("메소드실행");
@@ -113,9 +119,6 @@ public class BrockerServerThread implements Runnable {
 				e.printStackTrace();
 				exit = true; // 클라이언트가 접속 끊으면 플래그변수를 true로 바꾸면서 반복을 종료
 			} catch (RecordNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (DuplicateIDException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (InvalidTransactionException e) {

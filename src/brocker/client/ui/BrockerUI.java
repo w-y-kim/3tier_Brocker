@@ -46,8 +46,8 @@ import javax.swing.JProgressBar;
 
 public class BrockerUI implements ActionListener {
 
-	private JFrame frame;//TODO 프레임을 client의 생성자에서 setvisible해주도록 해서 일단 public
-	
+	private JFrame frame;// TODO 프레임을 client의 생성자에서 setvisible해주도록 해서 일단 public
+
 	// 상단광고
 	private JPanel top_panel;
 
@@ -113,8 +113,8 @@ public class BrockerUI implements ActionListener {
 	private int strLength;
 	private JButton 종료;
 
-	
-	
+	private ArrayList<Customer> cusList;
+
 	/**
 	 * Launch the application.
 	 */
@@ -138,7 +138,7 @@ public class BrockerUI implements ActionListener {
 	 */
 	public BrockerUI() {
 		initialize();// 새로 추가해도 새로 창 생기거나 갱신되지 않는 이유는?
-	
+
 	}
 
 	/**
@@ -153,7 +153,7 @@ public class BrockerUI implements ActionListener {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 
-//		top_panel = new JPanel();
+		// top_panel = new JPanel();
 		Tape tape = new Tape(this, db);
 		tape.setBackground(Color.ORANGE);
 		tape.setForeground(Color.DARK_GRAY);
@@ -459,7 +459,7 @@ public class BrockerUI implements ActionListener {
 				}
 			});
 
-		}//초기화블록
+		} // 초기화블록
 		try {
 			stockList = db.getAllStock();
 			for (Stock e : stockList) {
@@ -469,7 +469,7 @@ public class BrockerUI implements ActionListener {
 			e1.printStackTrace();
 		}
 		try {// TODO 멤버변수였던걸 로컬로 바꾸니까 갑자기 dlm2가 갱신 잘됨 뭐지 ??
-			ArrayList<Customer> cusList = db.getAllCustomer();
+			cusList = db.getAllCustomer();
 			for (Customer e : cusList) {
 				dlm2.addElement(e);
 			}
@@ -541,6 +541,7 @@ public class BrockerUI implements ActionListener {
 	 * @param stockJList
 	 */
 	private void setTextFieldValue(Object list) {
+
 		if (list instanceof Customer) {
 			Customer customer = (Customer) list;
 			등록번호필드.setText(customer.getSsn());
@@ -570,44 +571,47 @@ public class BrockerUI implements ActionListener {
 			if (주소명필드.getText().equals("")) {
 				상태바.setIndeterminate(true); // 진행이 안될때 모습 표시
 			}
-			if (me.getSource() == customerJList) {
-				// 리스트 갱신기능은 확인버튼에도 추가함
-				Object selectedValue = null;
-				selectedValue = (Customer) customerJList.getSelectedValue();
-				setTextFieldValue((Customer) selectedValue);// 선택된 객체를 필드에 넣음
-				거래수량필드.setText("");//키보드리스너 때문에 
+			if (customerJList.isEnabled() == true) {
 
-				Customer cus = (Customer) selectedValue;// 선택한 객체의 주민번호 사용하려고
+				if (me.getSource() == customerJList) {
+					// 리스트 갱신기능은 확인버튼에도 추가함
+					Object selectedValue = null;
+					selectedValue = (Customer) customerJList.getSelectedValue();
+					setTextFieldValue((Customer) selectedValue);// 선택된 객체를 필드에
+																// 넣음
+					거래수량필드.setText("");// 키보드리스너 때문에
 
-				try {
-					
-					dlm3.removeAllElements();// 초기화하는 것은 고객별 포트폴리오
-					ArrayList<Shares> portList = db.getPortfolio(cus.getSsn());
-					for (Shares e : portList) {
-						dlm3.addElement(e);
+					Customer cus = (Customer) selectedValue;// 선택한 객체의 주민번호
+															// 사용하려고
+
+					try {
+
+						dlm3.removeAllElements();// 초기화하는 것은 고객별 포트폴리오
+						ArrayList<Shares> portList = db.getPortfolio(cus.getSsn());
+						for (Shares e : portList) {
+							dlm3.addElement(e);
+						}
+
+						// TODO 실행은 되는데 빠진게 반영이 안됨,dlm3는 반영되는데
+						dlm2.removeAllElements();
+						cusList = db.getAllCustomer();
+						for (Customer e : cusList) {
+							dlm2.addElement(e);
+						}
+					} catch (RecordNotFoundException e) {
+						e.printStackTrace();
+
 					}
 
-					// TODO 실행은 되는데 빠진게 반영이 안됨,dlm3는 반영되는데
-					dlm2.removeAllElements();
-					ArrayList<Customer> cusList;
-					cusList = db.getAllCustomer();
-					for (Customer e : cusList) {
-						dlm2.addElement(e);
-					}
-				} catch (RecordNotFoundException e) {
-					e.printStackTrace();
-
+				} else if (me.getSource() == stockJList) {
+					Object selectedValue = null;
+					selectedValue = (Stock) stockJList.getSelectedValue();
+					setTextFieldValue((Stock) selectedValue);
+				} else if (me.getSource() == portJList) {
+					Object selectedValue = null;
+					selectedValue = (Shares) portJList.getSelectedValue();
+					setTextFieldValue((Shares) selectedValue);
 				}
-
-			} else if (me.getSource() == stockJList) {
-				Object selectedValue = null;
-				selectedValue = (Stock) stockJList.getSelectedValue();
-				setTextFieldValue((Stock) selectedValue);
-			} else if (me.getSource() == portJList) {
-				Object selectedValue = null;
-				selectedValue = (Shares) portJList.getSelectedValue();
-				// clearAll(portJList);//필요없는거 같음
-				setTextFieldValue((Shares) selectedValue);
 			}
 
 		}
@@ -690,7 +694,6 @@ public class BrockerUI implements ActionListener {
 																					// 생성함
 
 			try {
-
 				switch (menu) {
 				case "신규메뉴":
 
@@ -698,8 +701,22 @@ public class BrockerUI implements ActionListener {
 							|| cus.getAddress().equals("") == true) {
 						showMessage("회원정보를 선택해주세요");
 						return;
-					} else {
-						db.addCustomer(cus);
+					} 
+					//보내기 전 미리 검사하는게 안복잡하긴 함 
+					else if (this.check()) {
+						showMessage("중복된 등록번호가 존재합니다.");
+					} 
+					else {
+						// try {
+						try {
+							db.addCustomer(cus);
+						} catch (DuplicateIDException e1) {
+							showMessage("중복된 등록번호가 존재합니다.");
+						}
+						// } catch (DuplicateIDException e2) {
+						// showMessage("catch 동일한 자료가 존재합니다.");
+						// }
+
 						showMessage("고객등록완료");
 					}
 
@@ -775,7 +792,7 @@ public class BrockerUI implements ActionListener {
 				default:
 					break;
 				}
-			} catch (DuplicateIDException | RecordNotFoundException | InvalidTransactionException e1) {
+			} catch (RecordNotFoundException | InvalidTransactionException e1) {
 				e1.printStackTrace();
 				showMessage(e1.getMessage());
 			}
@@ -841,7 +858,19 @@ public class BrockerUI implements ActionListener {
 		JOptionPane.showMessageDialog(null, msg);
 	}
 
-	public int tapeInsertOnFrame(){
+	public int tapeInsertOnFrame() {
 		return frame.WIDTH;
+	}
+
+	public boolean check() {
+		boolean result = false;
+		// ArrayList<Customer> allCustomer = db.getAllCustomer();
+		String checkID = 등록번호필드.getText();
+		for (int i = 0; i < cusList.size(); i++) {
+			if (checkID.equals(cusList.get(i).getSsn())) {
+				result = true;
+			}
+		}
+		return result;
 	}
 }
