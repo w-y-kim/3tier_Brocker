@@ -119,8 +119,8 @@ public class BrockerServerThread implements Runnable {
 				e.printStackTrace();
 				exit = true; // 클라이언트가 접속 끊으면 플래그변수를 true로 바꾸면서 반복을 종료
 			} catch (RecordNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+//				e.printStackTrace();
+				cmd.setStatus(Command.RECORD_NOTFOUND);
 			} catch (InvalidTransactionException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
